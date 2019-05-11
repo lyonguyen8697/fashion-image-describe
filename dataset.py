@@ -129,7 +129,7 @@ def prepare_train_data(config):
         data = {'word_idxs': word_idxs, 'masks': masks}
         np.save(config.temp_data_file, data)
     else:
-        data = np.load(config.temp_data_file, encoding='latin1').item()
+        data = np.load(config.temp_data_file, encoding='latin1', allow_pickle=True).item()
         word_idxs = data['word_idxs']
         masks = data['masks']
     print("Captions processed.")
