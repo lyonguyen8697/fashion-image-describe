@@ -78,7 +78,8 @@ def prepare_train_data(config):
     """ Prepare the data for training the model. """
     # coco = COCO(config.train_caption_file)
     # coco = Flickr(config.train_caption_file)
-    coco = Etsy(config.train_caption_file)
+    # coco = Etsy(config.train_caption_file)
+    coco = FashionGen(config.train_caption_file)
     coco.filter_by_cap_len(config.max_caption_length)
 
     print("Building the vocabulary...")
@@ -149,7 +150,8 @@ def prepare_train_data(config):
 def prepare_eval_data(config):
     """ Prepare the data for evaluating the model. """
     # coco = Flickr(config.eval_caption_file)
-    coco = Etsy(config.eval_caption_file)
+    # coco = Etsy(config.eval_caption_file)
+    coco = FashionGen(config.eval_caption_file)
     image_ids = list(coco.imgs.keys())
     image_files = [os.path.join(config.eval_image_dir,
                                 coco.imgs[image_id]['file_name'])
