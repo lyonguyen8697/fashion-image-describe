@@ -394,7 +394,7 @@ class CaptionGenerator(BaseModel):
         return memory, output
 
     def depth_attend(self, contexts, output):
-        hparams = self.hparams
+        config = self.config
 
         context_mean = tf.reduce_mean(contexts, axis=1)
 
@@ -402,11 +402,11 @@ class CaptionGenerator(BaseModel):
         output = self.nn.dropout(output)
 
         temp1 = self.nn.dense(inputs=context_mean,
-                               units=hparams.dim_attend_layer,
+                               units=config.dim_attend_layer,
                                activation=tf.tanh,
                                name='fc_1a')
         temp2 = self.nn.dense(inputs=output,
-                               units=hparams.dim_attend_layer,
+                               units=config.dim_attend_layer,
                                activation=tf.tanh,
                                name='fc_1b')
         temp = temp1 + temp2
