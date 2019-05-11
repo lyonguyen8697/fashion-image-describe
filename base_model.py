@@ -281,7 +281,7 @@ class BaseModel(object):
         # import pdb; pdb.set_trace()
         import os;
         data_path = data_path.strip()
-        data_dict = np.load(os.getcwd() + '/' + data_path, encoding='latin1').item()
+        data_dict = np.load(os.getcwd() + '/' + data_path, encoding='latin1', allow_pickle=True).item()
         count = 0
         for op_name in tqdm(data_dict):
             with tf.variable_scope(op_name, reuse = True):
