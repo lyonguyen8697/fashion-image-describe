@@ -45,18 +45,10 @@ __version__ = '2.0'
 # Licensed under the Simplified BSD License [see bsd.txt]
 
 import json
-import datetime
 import time
-import matplotlib.pyplot as plt
-from matplotlib.collections import PatchCollection
-from matplotlib.patches import Polygon
-import numpy as np
-from skimage.draw import polygon
 import urllib
-import copy
 import itertools
 import os
-import string
 from tqdm import tqdm
 from nltk.tokenize import word_tokenize
 

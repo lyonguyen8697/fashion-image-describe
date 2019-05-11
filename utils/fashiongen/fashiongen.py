@@ -290,6 +290,7 @@ class FashionGen:
             words_in_ann = ann['caption'].split()
             for word in words_in_ann:
                 if word not in vocab:
+                    print(word, words_in_ann)
                     keep_ann[ann['id']] = 0
                     break
             keep_img[ann['image_id']] = keep_img.get(ann['image_id'], 0) + 1

@@ -3,21 +3,13 @@ __version__ = '1.0'
 # Interface for accessing the Etsy dataset.
 
 
-import json
-import datetime
-import time
-import matplotlib.pyplot as plt
-from matplotlib.collections import PatchCollection
-from matplotlib.patches import Polygon
-import numpy as np
-from skimage.draw import polygon
-import urllib
-import copy
 import itertools
-import os
-import string
-from tqdm import tqdm
+import json
+import time
+
 from nltk.tokenize import word_tokenize
+from tqdm import tqdm
+
 
 class Etsy:
     def __init__(self, annotation_file=None):
