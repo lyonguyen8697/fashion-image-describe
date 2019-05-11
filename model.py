@@ -259,15 +259,17 @@ class CaptionGenerator(BaseModel):
         for idx in range(num_steps):
             # Attention mechanism
             with tf.variable_scope("attend"):
-                weighted = self.depth_attend(contexts, last_output)
-                attentive_contexts = contexts * tf.reshape(weighted, [-1, 1, 1, self.dim_ctx])
-                alpha = self.soft_attend(attentive_contexts, last_output)
-                context = tf.reduce_sum(contexts * tf.expand_dims(alpha, 2), axis=1)
-                if self.is_train:
-                    tiled_masks = tf.tile(tf.expand_dims(masks[:, idx], 1),
-                                         [1, self.num_ctx])
-                    masked_alpha = alpha * tiled_masks
-                    alphas.append(tf.reshape(masked_alpha, [-1]))
+                with tf.variable_scope('depth_attend'):
+                    weighted = self.depth_attend(contexts, last_output)
+                    attentive_contexts = contexts * tf.reshape(weighted, [-1, 1, self.dim_ctx])
+                with tf.variable_scope('soft_attend'):
+                    alpha = self.soft_attend(attentive_contexts, last_output)
+                    context = tf.reduce_sum(contexts * tf.expand_dims(alpha, 2), axis=1)
+                    if self.is_train:
+                        tiled_masks = tf.tile(tf.expand_dims(masks[:, idx], 1),
+                                             [1, self.num_ctx])
+                        masked_alpha = alpha * tiled_masks
+                        alphas.append(tf.reshape(masked_alpha, [-1]))
 
             # Embed the last word
             with tf.variable_scope("word_embedding"):
@@ -416,7 +418,7 @@ class CaptionGenerator(BaseModel):
                                activation=None,
                                use_bias=False,
                                name='fc_2')
-        weighted = tf.softmax(logits)
+        weighted = tf.nn.softmax(logits)
 
         return weighted
 
