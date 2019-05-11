@@ -6,7 +6,7 @@ from config import Config
 from model import CaptionGenerator
 from dataset import prepare_train_data, prepare_eval_data, prepare_test_data
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -67,6 +67,7 @@ def main(argv):
             model.load(sess, FLAGS.model_file)
             tf.get_default_graph().finalize()
             model.test(sess, data, vocabulary)
+
 
 if __name__ == '__main__':
     tf.app.run()
