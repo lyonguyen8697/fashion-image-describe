@@ -47,7 +47,7 @@ class Config(object):
 
         # about the vocabulary
         self.vocabulary_file = './vocabulary.csv'
-        self.vocabulary_size = 1826
+        self.vocabulary_size = 1827
         self.mean_file = './utils/ilsvrc_2012_mean.npy'
 
         # about the training
