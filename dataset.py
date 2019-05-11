@@ -196,7 +196,7 @@ def prepare_test_data(config):
 
 def build_vocabulary(config):
     """ Build the vocabulary from the training data and save it to a file. """
-    coco = COCO(config.train_caption_file)
+    coco = FashionGen(config.train_caption_file)
     coco.filter_by_cap_len(config.max_caption_length)
 
     vocabulary = Vocabulary(config.vocabulary_size)
