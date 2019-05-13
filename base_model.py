@@ -16,6 +16,7 @@ from utils.nn import NN
 from utils.coco.coco import COCO
 from utils.coco.pycocoevalcap.eval import COCOEvalCap
 from utils.misc import ImageLoader, CaptionData, TopN
+from utils.misc import save_result_image
 
 
 class BaseModel(object):
@@ -94,15 +95,7 @@ class BaseModel(object):
                 # Save the result in an image file, if requested
                 if config.save_eval_result_as_image:
                     image_file = batch[l]
-                    # image_name = image_file.split(os.sep)[-1]
-                    # image_name = os.path.splitext(image_name)[0]
-                    image_name = os.path.basename(image_file)
-                    img = plt.imread(image_file)
-                    plt.imshow(img)
-                    plt.axis('off')
-                    plt.title(caption)
-                    plt.savefig(os.path.join(config.eval_result_dir,
-                                             image_name+'_result.jpg'))
+                    save_result_image(image_file, caption, config.eval_result_dir)
 
         fp = open(config.eval_result_file, 'w')
         json.dump(results, fp)
@@ -141,15 +134,7 @@ class BaseModel(object):
 
                 # Save the result in an image file
                 image_file = batch[l]
-                # image_name = image_file.split(os.sep)[-1]
-                # image_name = os.path.splitext(image_name)[0]
-                image_name = os.path.basename(image_file)
-                img = plt.imread(image_file)
-                plt.imshow(img)
-                plt.axis('off')
-                plt.title(caption)
-                plt.savefig(os.path.join(config.test_result_dir,
-                                         image_name+'_result.jpg'))
+                save_result_image(image_file, caption, config.test_result_dir)
 
         # Save the captions to a file
         results = pd.DataFrame({'image_files':test_data.image_files,

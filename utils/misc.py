@@ -3,6 +3,9 @@ import numpy as np
 import cv2
 import heapq
 import Augmentor
+import os
+import matplotlib.pyplot as plt
+from textwrap import wrap
 
 
 class ImageLoader(object):
@@ -103,3 +106,24 @@ class TopN(object):
 
     def reset(self):
         self._data = []
+
+
+def save_result_image(image_file, desc, save_dir):
+    image_name = os.path.basename(image_file)
+    image = plt.imread(image_file)
+
+    fig, axes = plt.subplots(1, 2)
+    axes[0].imshow(image)
+    axes[0].axis('off')
+
+    axes[1].axis('off')
+    desc = wrap(desc, width=40)
+    desc.insert(0, 'Description:')
+    h = 1.0
+    for line in desc:
+        h = h - 0.05
+        axes[1].text(0, h, line)
+
+    fig.tight_layout()
+    plt.savefig(os.path.join(save_dir,
+                             image_name + '_result.jpg'))
