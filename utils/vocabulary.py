@@ -6,11 +6,11 @@ import string
 
 
 class Vocabulary(object):
-    def __init__(self, size, save_file=None):
+    def __init__(self, size, end_token, save_file=None):
         self.words = []
         self.word2idx = {}
         self.word_frequencies = []
-        self.end_token = '<end>'
+        self.end_token = end_token
         self.size = size
         if save_file is not None:
             self.load(save_file)
@@ -52,16 +52,18 @@ class Vocabulary(object):
     def get_sentence(self, idxs):
         """ Translate a vector of indicies into a sentence. """
         words = [self.words[i] for i in idxs]
-        if words[-1] == '<end>':
-            length = np.argmax(np.array(words) == '<end>') + 1
-            words[-1] = '.'
-        elif words[-1] != '.':
-            length = len(words) + 1
-            words.append('.')
+
+        if self.end_token in words:
+            length = np.argmax(np.array(words) == self.end_token) + 1
         else:
             length = len(words)
-
         words = words[:length]
+
+        if words[-1] == self.end_token:
+            words[-1] = '.'
+        elif words[-1] != '.':
+            words.append('.')
+
         sentence = "".join([" "+w if not w.startswith("'") and w not in string.punctuation else w for w in words]).strip()
         return sentence
 

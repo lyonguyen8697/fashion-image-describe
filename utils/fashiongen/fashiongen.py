@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 
 class FashionGen:
-    def __init__(self, annotation_file=None):
+    def __init__(self, annotation_file=None, end_token='<end>'):
         """
         Constructor of Flickr Dataset helper class for reading and visualizing annotations.
         :param annotation_file (str): location of annotation file
@@ -25,6 +25,7 @@ class FashionGen:
         self.imgs = {}
         self.cats = {}
         self.img_name_to_id = {}
+        self.end_token = end_token
 
         if not annotation_file == None:
             print('loading annotations into memory...')
@@ -263,8 +264,8 @@ class FashionGen:
     def process_dataset(self):
         for ann in self.dataset['annotations']:
             q = ann['caption'].lower()
-            if not q.endswith(' <end>'):
-                q = q + ' <end>'
+            if not q.endswith(self.end_token):
+                q = q + ' ' + self.end_token
             ann['caption'] = q
 
     def filter_by_cap_len(self, max_cap_len):

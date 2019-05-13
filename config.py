@@ -48,22 +48,23 @@ class Config(object):
         # about the vocabulary
         self.vocabulary_file = './vocabulary.csv'
         self.vocabulary_size = 1827
+        self.end_token = '<end>'
         self.mean_file = './utils/ilsvrc_2012_mean.npy'
 
         # about the training
-        self.train_image_dir = './dataset/images'
+        self.train_image_dir = 'F://datasets/fashion-gen/images'
         self.train_caption_file = './train/train-data.json'
         self.temp_annotation_file = './train/anns.csv'
         self.temp_data_file = './train/data.npy'
 
         # about the evaluation
-        self.eval_image_dir = './dataset/images'
+        self.eval_image_dir = 'F://datasets/fashion-gen/images'
         self.eval_caption_file = './val/val-data.json'
         self.eval_result_dir = './val/results/'
         self.eval_result_file = './val/results.json'
         self.save_eval_result_as_image = True
 
         # about the testing
-        self.test_image_dir = './test/images/'
+        self.test_image_dir = './test/images'
         self.test_result_dir = './test/results/'
         self.test_result_file = './test/results.csv'

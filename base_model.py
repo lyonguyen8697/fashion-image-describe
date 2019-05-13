@@ -224,7 +224,7 @@ class BaseModel(object):
                                            memory[k],
                                            output[k],
                                            score)
-                        if vocabulary.words[w] == '<end>':
+                        if vocabulary.words[w] == config.end_token:
                             complete_caption_data[k].push(beam)
                         else:
                             partial_caption_data[k].push(beam)

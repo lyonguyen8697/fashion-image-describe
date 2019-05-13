@@ -83,7 +83,8 @@ def prepare_train_data(config):
     coco.filter_by_cap_len(config.max_caption_length)
 
     print("Building the vocabulary...")
-    vocabulary = Vocabulary(config.vocabulary_size)
+    vocabulary = Vocabulary(config.vocabulary_size,
+                            config.end_token)
     if not os.path.exists(config.vocabulary_file):
         vocabulary.build(coco.all_captions())
         vocabulary.save(config.vocabulary_file)
@@ -160,6 +161,7 @@ def prepare_eval_data(config):
     print("Building the vocabulary...")
     if os.path.exists(config.vocabulary_file):
         vocabulary = Vocabulary(config.vocabulary_size,
+                                config.end_token,
                                 config.vocabulary_file)
     else:
         vocabulary = build_vocabulary(config)
@@ -182,6 +184,7 @@ def prepare_test_data(config):
     print("Building the vocabulary...")
     if os.path.exists(config.vocabulary_file):
         vocabulary = Vocabulary(config.vocabulary_size,
+                                config.end_token,
                                 config.vocabulary_file)
     else:
         vocabulary = build_vocabulary(config)
@@ -199,7 +202,7 @@ def build_vocabulary(config):
     coco = FashionGen(config.train_caption_file)
     coco.filter_by_cap_len(config.max_caption_length)
 
-    vocabulary = Vocabulary(config.vocabulary_size)
+    vocabulary = Vocabulary(config.vocabulary_size, config.end_token)
     vocabulary.build(coco.all_captions())
     vocabulary.save(config.vocabulary_file)
     return vocabulary
