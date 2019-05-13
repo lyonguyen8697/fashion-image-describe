@@ -63,6 +63,7 @@ class Config(object):
         self.eval_result_dir = './val/results/'
         self.eval_result_file = './val/results.json'
         self.save_eval_result_as_image = True
+        self.translate_result = True
 
         # about the testing
         self.test_image_dir = './test/images'

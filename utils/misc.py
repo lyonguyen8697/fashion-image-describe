@@ -6,6 +6,7 @@ import Augmentor
 import os
 import matplotlib.pyplot as plt
 from textwrap import wrap
+from googletrans import Translator
 
 
 class ImageLoader(object):
@@ -108,8 +109,12 @@ class TopN(object):
         self._data = []
 
 
-def save_result_image(image_file, desc, save_dir):
+translator = Translator()
+
+
+def save_result_image(image_file, desc, save_dir, translate_desc=False):
     image_name = os.path.basename(image_file)
+    image_name = image_name.split('.')[0]
     image = plt.imread(image_file)
 
     fig, axes = plt.subplots(1, 2)
@@ -117,12 +122,21 @@ def save_result_image(image_file, desc, save_dir):
     axes[0].axis('off')
 
     axes[1].axis('off')
-    desc = wrap(desc, width=40)
-    desc.insert(0, 'Description:')
+    split_desc = wrap(desc, width=40)
+    split_desc.insert(0, 'Description:')
     h = 1.0
-    for line in desc:
+    for line in split_desc:
         h = h - 0.05
         axes[1].text(0, h, line)
+
+    if translate_desc:
+        trans_desc = translator.translate(desc, dest='vi').text
+        trans_desc = wrap(trans_desc, width=40)
+        trans_desc.insert(0, 'Translation:')
+        h = h - 0.05
+        for line in trans_desc:
+            h = h - 0.05
+            axes[1].text(0, h, line)
 
     fig.tight_layout()
     plt.savefig(os.path.join(save_dir,

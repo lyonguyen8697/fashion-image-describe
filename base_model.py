@@ -95,7 +95,7 @@ class BaseModel(object):
                 # Save the result in an image file, if requested
                 if config.save_eval_result_as_image:
                     image_file = batch[l]
-                    save_result_image(image_file, caption, config.eval_result_dir)
+                    save_result_image(image_file, caption, config.eval_result_dir, config.translate_result)
 
         fp = open(config.eval_result_file, 'w')
         json.dump(results, fp)
@@ -134,7 +134,7 @@ class BaseModel(object):
 
                 # Save the result in an image file
                 image_file = batch[l]
-                save_result_image(image_file, caption, config.test_result_dir)
+                save_result_image(image_file, caption, config.test_result_dir, config.translate_result)
 
         # Save the captions to a file
         results = pd.DataFrame({'image_files':test_data.image_files,
