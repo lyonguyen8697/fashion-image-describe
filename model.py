@@ -416,9 +416,8 @@ class CaptionGenerator(BaseModel):
         logits = self.nn.dense(inputs=temp,
                                units=self.dim_ctx,
                                activation=None,
-                               use_bias=False,
                                name='fc_2')
-        weighted = tf.nn.softmax(logits)
+        weighted = tf.nn.sigmoid(logits)
 
         return weighted
 
