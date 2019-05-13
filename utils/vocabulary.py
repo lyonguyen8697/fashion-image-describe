@@ -55,9 +55,11 @@ class Vocabulary(object):
         if words[-1] == '<end>':
             length = np.argmax(np.array(words) == '<end>') + 1
             words[-1] = '.'
-        else:
+        elif words[-1] != '.':
             length = len(words) + 1
             words.append('.')
+        else:
+            length = len(words)
 
         words = words[:length]
         sentence = "".join([" "+w if not w.startswith("'") and w not in string.punctuation else w for w in words]).strip()
