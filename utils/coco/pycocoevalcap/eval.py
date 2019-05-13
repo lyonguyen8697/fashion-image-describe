@@ -5,6 +5,7 @@ from .meteor.meteor import Meteor
 from .rouge.rouge import Rouge
 from .cider.cider import Cider
 
+
 class COCOEvalCap:
     def __init__(self, coco, cocoRes):
         self.evalImgs = []
@@ -37,7 +38,7 @@ class COCOEvalCap:
         print('setting up scorers...')
         scorers = [
             (Bleu(4), ["Bleu_1", "Bleu_2", "Bleu_3", "Bleu_4"]),
-            (Meteor(),"METEOR"),
+            # (Meteor(),"METEOR"),
             (Rouge(), "ROUGE_L"),
             (Cider(), "CIDEr")
         ]
