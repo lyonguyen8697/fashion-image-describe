@@ -5,7 +5,7 @@ class Config(object):
         # about the model architecture
         self.cnn = 'resnet50'               # 'vgg16' or 'resnet50'
         self.max_caption_length = 90
-        self.dim_embedding = 256
+        self.dim_embedding = 128
         self.num_lstm_units = 512
         self.num_initalize_layers = 2    # 1 or 2
         self.dim_initalize_layer = 512
