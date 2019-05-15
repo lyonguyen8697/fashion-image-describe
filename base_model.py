@@ -16,7 +16,7 @@ from utils.nn import NN
 from utils.coco.coco import COCO
 from utils.coco.pycocoevalcap.eval import COCOEvalCap
 from utils.misc import ImageLoader, CaptionData, TopN
-from utils.misc import save_result_image
+from utils.misc import ImageSaver
 
 
 class BaseModel(object):
@@ -25,6 +25,7 @@ class BaseModel(object):
         self.is_train = True if config.phase == 'train' else False
         self.train_cnn = self.is_train and config.train_cnn
         self.image_loader = ImageLoader('./utils/ilsvrc_2012_mean.npy')
+        self.image_saver = ImageSaver()
         self.image_shape = [224, 224, 3]
         self.nn = NN(config)
         self.global_step = tf.Variable(0,
@@ -88,14 +89,16 @@ class BaseModel(object):
                 word_idxs = caption_data[l][0].sentence
                 score = caption_data[l][0].score
                 caption = vocabulary.get_sentence(word_idxs)
-                results.append({'image_id': eval_data.image_ids[idx].item(),
+                image_idx = eval_data.image_ids[idx].item()
+                results.append({'image_id': image_idx,
                                 'caption': caption})
                 idx += 1
 
                 # Save the result in an image file, if requested
                 if config.save_eval_result_as_image:
                     image_file = batch[l]
-                    save_result_image(image_file, caption, config.eval_result_dir, config.translate_result)
+                    gt_caption = eval_gt_coco.loadAnns(image_idx)[0]['caption']
+                    self.image_saver.save_eval_image(image_file, gt_caption, caption, config.eval_result_dir)
 
         fp = open(config.eval_result_file, 'w')
         json.dump(results, fp)
@@ -134,7 +137,7 @@ class BaseModel(object):
 
                 # Save the result in an image file
                 image_file = batch[l]
-                save_result_image(image_file, caption, config.test_result_dir, config.translate_result)
+                self.image_saver.save_test_image(image_file, caption, config.test_result_dir, config.translate_result)
 
         # Save the captions to a file
         results = pd.DataFrame({'image_files':test_data.image_files,

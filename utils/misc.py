@@ -56,6 +56,77 @@ class ImageLoader(object):
         return images
 
 
+class ImageSaver(object):
+    def __init__(self):
+
+        self.translator = Translator()
+        self.translate_language = 'vi'
+
+    def save_test_image(self, image_file, caption, save_dir, translate_cap=False):
+        image_name = os.path.basename(image_file)
+        image_name = image_name.split('.')[0]
+
+        image = plt.imread(image_file)
+
+        fig, axes = plt.subplots(1, 2)
+        axes[0].imshow(image)
+        axes[0].axis('off')
+        axes[1].axis('off')
+
+        splitted_caption = wrap(caption, width=40)
+        splitted_caption.insert(0, 'Description:')
+        row_height = 1.0
+        for line in splitted_caption:
+            row_height = row_height - 0.05
+            axes[1].text(0, row_height, line)
+
+        if translate_cap:
+            try:
+                translated = self.translator.translate(caption, dest=self.translate_language).text
+                translated = wrap(translated, width=40)
+                translated.insert(0, 'Translation:')
+                row_height = row_height - 0.05
+                for line in translated:
+                    row_height = row_height - 0.05
+                    axes[1].text(0, row_height, line)
+            except:
+                pass
+
+
+        fig.tight_layout()
+        plt.savefig(os.path.join(save_dir,
+                                 image_name + '_result.jpg'))
+
+    def save_eval_image(self, image_file, ground_truth_cap, predict_cap, save_dir):
+        image_name = os.path.basename(image_file)
+        image_name = image_name.split('.')[0]
+
+        image = plt.imread(image_file)
+
+        fig, axes = plt.subplots(1, 2)
+        axes[0].imshow(image)
+        axes[0].axis('off')
+        axes[1].axis('off')
+
+        ground_truth_cap = wrap(ground_truth_cap, width=40)
+        ground_truth_cap.insert(0, 'Ground truth:')
+        row_height = 1.0
+        for line in ground_truth_cap:
+            row_height = row_height - 0.05
+            axes[1].text(0, row_height, line)
+
+        predict_cap = wrap(predict_cap, width=40)
+        predict_cap.insert(0, 'Prediction:')
+        row_height = row_height - 0.05
+        for line in predict_cap:
+            row_height = row_height - 0.05
+            axes[1].text(0, row_height, line)
+
+        fig.tight_layout()
+        plt.savefig(os.path.join(save_dir,
+                                 image_name + '_result.jpg'))
+
+
 class CaptionData(object):
     def __init__(self, sentence, memory, output, score):
        self.sentence = sentence
@@ -108,36 +179,3 @@ class TopN(object):
     def reset(self):
         self._data = []
 
-
-translator = Translator()
-
-
-def save_result_image(image_file, desc, save_dir, translate_desc=False):
-    image_name = os.path.basename(image_file)
-    image_name = image_name.split('.')[0]
-    image = plt.imread(image_file)
-
-    fig, axes = plt.subplots(1, 2)
-    axes[0].imshow(image)
-    axes[0].axis('off')
-
-    axes[1].axis('off')
-    split_desc = wrap(desc, width=40)
-    split_desc.insert(0, 'Description:')
-    h = 1.0
-    for line in split_desc:
-        h = h - 0.05
-        axes[1].text(0, h, line)
-
-    if translate_desc:
-        trans_desc = translator.translate(desc, dest='vi').text
-        trans_desc = wrap(trans_desc, width=40)
-        trans_desc.insert(0, 'Translation:')
-        h = h - 0.05
-        for line in trans_desc:
-            h = h - 0.05
-            axes[1].text(0, h, line)
-
-    fig.tight_layout()
-    plt.savefig(os.path.join(save_dir,
-                             image_name + '_result.jpg'))
