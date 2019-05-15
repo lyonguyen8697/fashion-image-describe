@@ -151,9 +151,10 @@ class BaseModel(object):
         # Feed in the images to get the contexts and the initial LSTM states
         config = self.config
         images = self.image_loader.load_images(image_files)
+
         contexts, initial_memory, initial_output = sess.run(
             [self.conv_feats, self.initial_memory, self.initial_output],
-            feed_dict = {self.images: images})
+            feed_dict={self.images: images})
 
         partial_caption_data = []
         complete_caption_data = []
@@ -161,7 +162,7 @@ class BaseModel(object):
             initial_beam = CaptionData(sentence = [],
                                        memory = initial_memory[k],
                                        output = initial_output[k],
-                                       score = 1.0)
+                                       probs = [1.0])
             partial_caption_data.append(TopN(config.beam_size))
             partial_caption_data[-1].push(initial_beam)
             complete_caption_data.append(TopN(config.beam_size))
@@ -192,10 +193,10 @@ class BaseModel(object):
 
                 memory, output, scores = sess.run(
                     [self.memory, self.output, self.probs],
-                    feed_dict = {self.contexts: contexts,
-                                 self.last_word: last_word,
-                                 self.last_memory: last_memory,
-                                 self.last_output: last_output})
+                    feed_dict={self.contexts: contexts,
+                               self.last_word: last_word,
+                               self.last_memory: last_memory,
+                               self.last_output: last_output})
 
                 # Find the beam_size most probable next words
                 for k in range(config.batch_size):
@@ -207,11 +208,11 @@ class BaseModel(object):
                     # Append each of these words to the current partial caption
                     for w, s in words_and_scores:
                         sentence = caption_data.sentence + [w]
-                        score = caption_data.score * s
+                        probs = caption_data.probs + [s]
                         beam = CaptionData(sentence,
                                            memory[k],
                                            output[k],
-                                           score)
+                                           probs)
                         if vocabulary.words[w] == config.end_token:
                             complete_caption_data[k].push(beam)
                         else:

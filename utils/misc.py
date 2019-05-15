@@ -128,11 +128,17 @@ class ImageSaver(object):
 
 
 class CaptionData(object):
-    def __init__(self, sentence, memory, output, score):
-       self.sentence = sentence
-       self.memory = memory
-       self.output = output
-       self.score = score
+    def __init__(self, sentence, memory, output, probs):
+        self.sentence = sentence
+        self.memory = memory
+        self.output = output
+        self.probs = probs
+
+    @property
+    def score(self):
+        score = np.sum(np.log(self.probs))
+        score = score * (1 / (len(self.probs)**0.7))
+        return score
 
     def __cmp__(self, other):
         assert isinstance(other, CaptionData)
