@@ -102,6 +102,7 @@ class ImageSaver(object):
         fig.tight_layout()
         plt.savefig(os.path.join(save_dir,
                                  image_name + '_result.jpg'))
+        plt.close()
 
     def save_eval_image(self, image_file, ground_truth_cap, predict_cap, save_dir):
         image_name = os.path.basename(image_file)
@@ -133,6 +134,7 @@ class ImageSaver(object):
         fig.tight_layout()
         plt.savefig(os.path.join(save_dir,
                                  image_name + '_result.jpg'))
+        plt.close()
 
     def save_visualization_image(self, image_file, caption, depth_attention_weight, soft_attention_weight, save_dir):
         image_name = os.path.basename(image_file)
@@ -154,6 +156,7 @@ class ImageSaver(object):
 
             plt.savefig(os.path.join(save_dir,
                                      '{}_{}_result.jpg'.format(image_name, idx)))
+            plt.close()
 
     def _format_caption(self, caption):
         words = caption.split()
