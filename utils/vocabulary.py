@@ -59,12 +59,8 @@ class Vocabulary(object):
             length = len(words)
         words = words[:length]
 
-        if words[-1] == self.end_token:
-            words[-1] = '.'
-        elif words[-1] != '.':
-            words.append('.')
+        sentence = ' '.join(words)
 
-        sentence = "".join([" "+w if not w.startswith("'") and w not in string.punctuation else w for w in words]).strip()
         return sentence
 
     def save(self, save_file):
