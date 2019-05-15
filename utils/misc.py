@@ -5,6 +5,8 @@ import heapq
 import Augmentor
 import os
 import matplotlib.pyplot as plt
+from scipy.ndimage.filters import gaussian_filter
+from colorsys import hsv_to_rgb
 from textwrap import wrap
 from googletrans import Translator
 
@@ -57,10 +59,11 @@ class ImageLoader(object):
 
 
 class ImageSaver(object):
-    def __init__(self):
+    def __init__(self, image_shape):
 
         self.translator = Translator()
         self.translate_language = 'vi'
+        self.image_shape = image_shape
 
     def save_test_image(self, image_file, caption, save_dir, translate_cap=False):
         image_name = os.path.basename(image_file)
@@ -126,13 +129,63 @@ class ImageSaver(object):
         plt.savefig(os.path.join(save_dir,
                                  image_name + '_result.jpg'))
 
+    def save_visualization_image(self, image_file, caption, depth_attention_weight, soft_attention_weight, save_dir):
+        image_name = os.path.basename(image_file)
+        image_name = image_name.split('.')[0]
+        print(np.shape(depth_attention_weight))
+        print(np.shape(soft_attention_weight))
+
+        image = plt.imread(image_file)
+        for idx, word in enumerate(caption.split()):
+            im = plt.imshow(image)
+            depth_viz = self._visualize_depth_attention(depth_attention_weight[idx])
+            spatial_viz = self._visualize_soft_attention(soft_attention_weight[idx])
+
+            depth_viz = depth_viz[np.newaxis, np.newaxis]
+            spatial_viz = np.tile(np.expand_dims(spatial_viz, 2), 3)
+            attention_map = spatial_viz * depth_viz
+            plt.imshow(attention_map, alpha=0.7, extent=im.get_extent())
+            plt.title(word)
+
+            plt.savefig(os.path.join(save_dir,
+                                     '{}_{}_result.jpg'.format(image_name, idx)))
+
+    def _visualize_depth_attention(self, weight):
+        idx = np.argmax(weight)
+        color = self._pseudocolor(idx, 0, len(weight))
+
+        return np.array(color)
+
+    def _visualize_soft_attention(self, weight):
+        size = int(np.sqrt(len(weight)))
+        weight = np.reshape(weight, [size, size])
+        n_upsample = self.image_shape[0] / size
+        upsampled_weight = weight.repeat(n_upsample, axis=0).repeat(n_upsample, axis=1)
+        upsampled_weight = gaussian_filter(upsampled_weight, sigma=7)
+
+        return upsampled_weight
+
+    def _pseudocolor(self, val, minval, maxval):
+        """ Convert val in range minval..maxval to the range 0..360 degrees which
+            correspond to the colors Red and Green in the HSV colorspace.
+        """
+        h = (float(val - minval) / (maxval - minval)) * 360
+
+        # Convert hsv color (h,1,1) to its rgb equivalent.
+        # Note: hsv_to_rgb() function expects h to be in the range 0..1 not 0..360
+        r, g, b = hsv_to_rgb(h / 360, 1., 1.)
+        return r, g, b
+
+
 
 class CaptionData(object):
-    def __init__(self, sentence, memory, output, probs):
+    def __init__(self, sentence, memory, output, probs, depth_attention_weights=[], soft_attention_weights=[]):
         self.sentence = sentence
         self.memory = memory
         self.output = output
         self.probs = probs
+        self.depth_attention_weights = depth_attention_weights
+        self.soft_attention_weights = soft_attention_weights
 
     @property
     def score(self):

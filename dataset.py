@@ -197,6 +197,29 @@ def prepare_test_data(config):
     return dataset, vocabulary
 
 
+def prepare_visualization_data(config):
+    """ Prepare the data for testing the model. """
+    files = os.listdir(config.visualization_image_dir)
+    image_files = [os.path.join(config.visualization_image_dir, f) for f in files
+        if f.lower().endswith('.jpg') or f.lower().endswith('.jpeg')]
+    image_ids = list(range(len(image_files)))
+
+    print("Building the vocabulary...")
+    if os.path.exists(config.vocabulary_file):
+        vocabulary = Vocabulary(config.vocabulary_size,
+                                config.end_token,
+                                config.vocabulary_file)
+    else:
+        vocabulary = build_vocabulary(config)
+    print("Vocabulary built.")
+    print("Number of words = %d" %(vocabulary.size))
+
+    print("Building the dataset...")
+    dataset = DataSet(image_ids, image_files, config.batch_size)
+    print("Dataset built.")
+    return dataset, vocabulary
+
+
 def build_vocabulary(config):
     """ Build the vocabulary from the training data and save it to a file. """
     coco = FashionGen(config.train_caption_file)

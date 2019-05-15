@@ -25,7 +25,7 @@ class BaseModel(object):
         self.is_train = True if config.phase == 'train' else False
         self.train_cnn = self.is_train and config.train_cnn
         self.image_loader = ImageLoader('./utils/ilsvrc_2012_mean.npy')
-        self.image_saver = ImageSaver()
+        self.image_saver = ImageSaver([224, 224, 3])
         self.image_shape = [224, 224, 3]
         self.nn = NN(config)
         self.global_step = tf.Variable(0,
@@ -146,7 +146,45 @@ class BaseModel(object):
         results.to_csv(config.test_result_file)
         print("Testing complete.")
 
-    def beam_search(self, sess, image_files, vocabulary):
+    def visualize_attention(self, sess, visualization_images, vocabulary):
+        """ PLot attention on given images. """
+        print("Visualize attention ...")
+        config = self.config
+
+        if not os.path.exists(config.visualization_result_dir):
+            os.mkdir(config.visualization_result_dir)
+
+        captions = []
+        scores = []
+
+        # Generate the captions for the images
+        for k in tqdm(list(range(visualization_images.num_batches)), desc='path'):
+            batch = visualization_images.next_batch()
+            caption_data = self.beam_search(sess, batch, vocabulary, keep_attention_weights=True)
+
+            fake_cnt = 0 if k < visualization_images.num_batches - 1 \
+                else visualization_images.fake_count
+            for l in range(visualization_images.batch_size - fake_cnt):
+                word_idxs = caption_data[l][0].sentence
+                score = caption_data[l][0].score
+                depth_attention_weight = caption_data[l][0].depth_attention_weights
+                soft_attention_weight = caption_data[l][0].soft_attention_weights
+                caption = vocabulary.get_sentence(word_idxs)
+                captions.append(caption)
+                scores.append(score)
+
+                # Save the result in an image file
+                image_file = batch[l]
+                self.image_saver.save_visualization_image(image_file, caption, depth_attention_weight, soft_attention_weight, config.visualization_result_dir)
+
+        # Save the captions to a file
+        results = pd.DataFrame({'image_files': visualization_images.image_files,
+                                'caption': captions,
+                                'prob': scores})
+        results.to_csv(config.visualization_result_file)
+        print("Visualize complete.")
+
+    def beam_search(self, sess, image_files, vocabulary, keep_attention_weights=False):
         """Use beam search to generate the captions for a batch of images."""
         # Feed in the images to get the contexts and the initial LSTM states
         config = self.config
@@ -191,12 +229,20 @@ class BaseModel(object):
                                         for pcl in partial_caption_data_lists],
                                         np.float32)
 
-                memory, output, scores = sess.run(
-                    [self.memory, self.output, self.probs],
-                    feed_dict={self.contexts: contexts,
-                               self.last_word: last_word,
-                               self.last_memory: last_memory,
-                               self.last_output: last_output})
+                if keep_attention_weights:
+                    memory, output, scores, depth_attention_weights, soft_attention_weights = sess.run(
+                        [self.memory, self.output, self.probs, self.depth_attention_weights, self.soft_attention_weights],
+                        feed_dict = {self.contexts: contexts,
+                                     self.last_word: last_word,
+                                     self.last_memory: last_memory,
+                                     self.last_output: last_output})
+                else:
+                    memory, output, scores = sess.run(
+                        [self.memory, self.output, self.probs],
+                        feed_dict={self.contexts: contexts,
+                                   self.last_word: last_word,
+                                   self.last_memory: last_memory,
+                                   self.last_output: last_output})
 
                 # Find the beam_size most probable next words
                 for k in range(config.batch_size):
@@ -209,10 +255,15 @@ class BaseModel(object):
                     for w, s in words_and_scores:
                         sentence = caption_data.sentence + [w]
                         probs = caption_data.probs + [s]
+                        if keep_attention_weights:
+                            depth_att = caption_data.depth_attention_weights + [depth_attention_weights[k].flatten()]
+                            soft_att = caption_data.soft_attention_weights + [soft_attention_weights[k].flatten()]
                         beam = CaptionData(sentence,
                                            memory[k],
                                            output[k],
-                                           probs)
+                                           probs,
+                                           depth_attention_weights=depth_att if keep_attention_weights else None,
+                                           soft_attention_weights=soft_att if keep_attention_weights else None)
                         if vocabulary.words[w] == config.end_token:
                             complete_caption_data[k].push(beam)
                         else:

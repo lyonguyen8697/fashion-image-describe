@@ -4,7 +4,7 @@ import tensorflow as tf
 
 from config import Config
 from model import CaptionGenerator
-from dataset import prepare_train_data, prepare_eval_data, prepare_test_data
+from dataset import prepare_train_data, prepare_eval_data, prepare_test_data, prepare_visualization_data
 
 # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
@@ -60,13 +60,20 @@ def main(argv):
             tf.get_default_graph().finalize()
             model.eval(sess, coco, data, vocabulary)
 
-        else:
+        elif FLAGS.phase == 'test':
             # testing phase
             data, vocabulary = prepare_test_data(config)
             model = CaptionGenerator(config)
             model.load(sess, FLAGS.model_file)
             tf.get_default_graph().finalize()
             model.test(sess, data, vocabulary)
+        else:
+            # plot attention
+            data, vocabulary = prepare_visualization_data(config)
+            model = CaptionGenerator(config)
+            model.load(sess, FLAGS.model_file)
+            tf.get_default_graph().finalize()
+            model.visualize_attention(sess, data, vocabulary)
 
 
 if __name__ == '__main__':
