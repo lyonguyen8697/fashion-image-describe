@@ -3,6 +3,7 @@ import numpy as np
 
 from base_model import BaseModel
 
+
 class CaptionGenerator(BaseModel):
     def build(self):
         """ Build the model. """
@@ -243,9 +244,9 @@ class CaptionGenerator(BaseModel):
 
         # Prepare to run
         predictions = []
+        weights = []
+        alphas = []
         if self.is_train:
-            weights = []
-            alphas = []
             cross_entropies = []
             predictions_correct = []
             num_steps = config.max_caption_length
@@ -269,12 +270,13 @@ class CaptionGenerator(BaseModel):
                 if self.is_train:
                     tiled_masks = tf.tile(tf.expand_dims(masks[:, idx], 1),
                                           [1, self.dim_ctx])
-                    masked_weight = weighted * tiled_masks
-                    weights.append(tf.reshape(masked_weight, [-1]))
+                    weighted = weighted * tiled_masks
                     tiled_masks = tf.tile(tf.expand_dims(masks[:, idx], 1),
-                                         [1, self.num_ctx])
-                    masked_alpha = alpha * tiled_masks
-                    alphas.append(tf.reshape(masked_alpha, [-1]))
+                                          [1, self.num_ctx])
+                    alpha = alpha * tiled_masks
+
+                weights.append(tf.reshape(weighted, [-1]))
+                alphas.append(tf.reshape(alpha, [-1]))
 
             # Embed the last word
             with tf.variable_scope("word_embedding"):
@@ -319,17 +321,17 @@ class CaptionGenerator(BaseModel):
 
             tf.get_variable_scope().reuse_variables()
 
+        weights = tf.stack(weights, axis=1)
+        weights = tf.reshape(weights, [config.batch_size, self.dim_ctx, -1])
+        alphas = tf.stack(alphas, axis=1)
+        alphas = tf.reshape(alphas, [config.batch_size, self.num_ctx, -1])
         # Compute the final loss, if necessary
         if self.is_train:
             cross_entropies = tf.stack(cross_entropies, axis = 1)
             cross_entropy_loss = tf.reduce_sum(cross_entropies) / tf.reduce_sum(masks)
 
-            weights = tf.stack(weights, axis=1)
-            weights = tf.reshape(weights, [config.batch_size, self.dim_ctx, -1])
             depth_attentions = tf.reduce_sum(weights, axis=2)
 
-            alphas = tf.stack(alphas, axis = 1)
-            alphas = tf.reshape(alphas, [config.batch_size, self.num_ctx, -1])
             soft_attentions = tf.reduce_sum(alphas, axis = 2)
             diffs = tf.ones_like(soft_attentions) - soft_attentions
             attention_loss = config.attention_loss_factor \
@@ -364,6 +366,8 @@ class CaptionGenerator(BaseModel):
             self.memory = memory
             self.output = output
             self.probs = probs
+            self.depth_attention_weights = weights
+            self.soft_attention_weights = alphas
 
         print("RNN built.")
 
