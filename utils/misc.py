@@ -9,6 +9,7 @@ from scipy.ndimage.filters import gaussian_filter
 from colorsys import hsv_to_rgb
 from textwrap import wrap
 from googletrans import Translator
+import string
 
 
 class ImageLoader(object):
@@ -59,11 +60,12 @@ class ImageLoader(object):
 
 
 class ImageSaver(object):
-    def __init__(self, image_shape):
+    def __init__(self, image_shape, end_token):
 
         self.translator = Translator()
         self.translate_language = 'vi'
         self.image_shape = image_shape
+        self.end_token = end_token
 
     def save_test_image(self, image_file, caption, save_dir, translate_cap=False):
         image_name = os.path.basename(image_file)
@@ -76,6 +78,7 @@ class ImageSaver(object):
         axes[0].axis('off')
         axes[1].axis('off')
 
+        caption = self._format_caption(caption)
         splitted_caption = wrap(caption, width=40)
         splitted_caption.insert(0, 'Description:')
         row_height = 1.0
@@ -111,6 +114,7 @@ class ImageSaver(object):
         axes[0].axis('off')
         axes[1].axis('off')
 
+        ground_truth_cap = self._format_caption(ground_truth_cap)
         ground_truth_cap = wrap(ground_truth_cap, width=40)
         ground_truth_cap.insert(0, 'Ground truth:')
         row_height = 1.0
@@ -118,6 +122,7 @@ class ImageSaver(object):
             row_height = row_height - 0.05
             axes[1].text(0, row_height, line)
 
+        predict_cap = self._format_caption(predict_cap)
         predict_cap = wrap(predict_cap, width=40)
         predict_cap.insert(0, 'Prediction:')
         row_height = row_height - 0.05
@@ -150,6 +155,17 @@ class ImageSaver(object):
             plt.savefig(os.path.join(save_dir,
                                      '{}_{}_result.jpg'.format(image_name, idx)))
 
+    def _format_caption(self, caption):
+        words = caption.split()
+
+        if words[-1] == self.end_token:
+            words[-1] = '.'
+        elif words[-1] != '.':
+            words.append('.')
+        sentence = "".join(
+            [" " + w if not w.startswith("'") and w not in string.punctuation else w for w in words]).strip()
+        return sentence
+
     def _visualize_depth_attention(self, weight):
         idx = np.argmax(weight)
         color = self._pseudocolor(idx, 0, len(weight))
@@ -175,7 +191,6 @@ class ImageSaver(object):
         # Note: hsv_to_rgb() function expects h to be in the range 0..1 not 0..360
         r, g, b = hsv_to_rgb(h / 360, 1., 1.)
         return r, g, b
-
 
 
 class CaptionData(object):

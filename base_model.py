@@ -25,7 +25,7 @@ class BaseModel(object):
         self.is_train = True if config.phase == 'train' else False
         self.train_cnn = self.is_train and config.train_cnn
         self.image_loader = ImageLoader('./utils/ilsvrc_2012_mean.npy')
-        self.image_saver = ImageSaver([224, 224, 3])
+        self.image_saver = ImageSaver([224, 224, 3], config.end_token)
         self.image_shape = [224, 224, 3]
         self.nn = NN(config)
         self.global_step = tf.Variable(0,
